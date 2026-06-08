@@ -1,23 +1,25 @@
 package main
 
-import (
-	"net"
-)
-
 type Room struct {
-	users map[User]bool
+	roomName string
+	users    map[*User]bool
 }
 
-type User struct {
-	conn      net.Conn
-	username  string
-	chatGroup *Room
-}
+var rooms []Room
 
-func NewRoom() *Room {
-	return &Room{
-		users: make(map[User]bool),
+func NewRoom(name string) *Room {
+	if rooms == nil {
+		rooms = make([]Room, 1)
 	}
+
+	newRoom := Room{
+		roomName: name,
+		users:    make(map[*User]bool),
+	}
+
+	rooms = append(rooms, newRoom)
+
+	return &newRoom
 }
 
 func (cg *Room) Broadcast(message string, sender User) {

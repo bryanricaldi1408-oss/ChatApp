@@ -39,9 +39,9 @@ func handleConnection(conn net.Conn) {
 	username = strings.TrimSpace(username)
 	clientsMutex.Lock()
 	clients[conn] = User{
-		conn:      conn,
-		username:  username,
-		chatGroup: nil,
+		conn:     conn,
+		username: username,
+		room:     nil,
 	}
 	clientsMutex.Unlock()
 
