@@ -14,7 +14,7 @@ var (
 	clientsMutex sync.Mutex
 )
 
-func broadcast(senderConn net.Conn, senderName string, message string) {
+func Broadcast(senderConn net.Conn, senderName string, message string) {
 	clientsMutex.Lock()
 	for conn := range clients {
 		if conn != senderConn {
@@ -60,7 +60,7 @@ func handleConnection(conn net.Conn) {
 
 		fmt.Printf("%s", message)
 
-		broadcast(conn, username, message)
+		Broadcast(conn, username, message)
 	}
 }
 func main() {
