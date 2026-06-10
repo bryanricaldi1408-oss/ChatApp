@@ -6,81 +6,64 @@ import (
 	"net"
 	"os"
 	"strings"
-	"sync"
 )
 
-var (
-	clients      = make(map[net.Conn]User)
-	clientsMutex sync.Mutex
-)
-
-func Broadcast(senderConn net.Conn, senderName string, message string) {
-	clientsMutex.Lock()
-	for conn := range clients {
-		if conn != senderConn {
-			fmt.Fprintf(conn, "\n[%s]: %s", senderName, message)
-		}
-	}
-	clientsMutex.Unlock()
+type Client struct {
+	conn net.Conn
+	name string
 }
 
-func handleConnection(conn net.Conn) {
+type Server struct {
+	clients   map[*Client]bool
+	broadcast chan string
+}
+
+func handleConnection(conn net.Conn, chatServer *Server) {
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
 
-	// baca username pertama kali
-	username, err := reader.ReadString('\n')
+	fmt.Fprintf(conn, "Silahkan masukkan username Anda: ")
+
+	usernameInput, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Println("Failed to read username")
+		fmt.Println("Gagal membaca username dari client")
 		return
 	}
 
-	username = strings.TrimSpace(username)
-	clientsMutex.Lock()
-	clients[conn] = User{
-		conn:     conn,
-		username: username,
-		room:     nil,
+	username := strings.TrimSpace(usernameInput)
+
+	newClient := Client{
+		conn: conn,
+		name: username,
 	}
-	clientsMutex.Unlock()
 
-	fmt.Printf("%s joined\n", username)
-
-	for {
-		message, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Printf("%s disconnected\n", username)
-
-			clientsMutex.Lock()
-			delete(clients, conn)
-			clientsMutex.Unlock()
-			return
-		}
-
-		fmt.Printf("%s", message)
-
-		Broadcast(conn, username, message)
-	}
+	chatServer.clients[&newClient] = true
 }
+
 func main() {
-	ln, err := net.Listen("tcp", ":9090")
-	if err != nil {
-		fmt.Fprint(os.Stderr, "Failed to listen! ", err)
-		os.Exit(1)
-	} else {
-		fmt.Println("Listening...")
+	chatServer := &Server{
+		clients:   make(map[*Client]bool),
+		broadcast: make(chan string),
 	}
+	port := ":9090"
+	ln, err := net.Listen("tcp", port)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to listen!\n")
+		os.Exit(1)
+	}
+	defer ln.Close()
+	fmt.Printf("Listening at %s\n", port)
+
 	for {
 		conn, err := ln.Accept()
-
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to accept connection:%v \n", err)
+			fmt.Fprintf(os.Stderr, "Failed to accept connection\n")
 			continue
-		} else {
-			fmt.Println("New connection accepted!")
 		}
-		go handleConnection(conn)
-	}
+		fmt.Println("New connection accepted!")
 
+		go handleConnection(conn, chatServer)
+
+	}
 }
