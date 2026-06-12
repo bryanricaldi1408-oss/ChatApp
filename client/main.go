@@ -16,8 +16,9 @@ func handleInputFromServer(conn net.Conn, username string) {
 			fmt.Println("\nTerputus dari server")
 			os.Exit(0)
 		}
-		fmt.Print("\r\033[K" + message)
-		fmt.Printf("[%s]: ", username)
+		fmt.Print("\r\033[K")
+		fmt.Print(message)
+		fmt.Printf("[%s]> ", username)
 	}
 }
 
@@ -46,6 +47,7 @@ func main() {
 	go handleInputFromServer(conn, username)
 
 	for {
+		fmt.Printf("[%s]> ", username)
 		input, err := keyboardReader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Gagal menerima input dari keyboard")
