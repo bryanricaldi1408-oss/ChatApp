@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func handleInputFromServer(conn net.Conn) {
+func handleInputFromServer(conn net.Conn, username string) {
 	serverReader := bufio.NewReader(conn)
 	for {
 		message, err := serverReader.ReadString('\n')
@@ -16,7 +16,8 @@ func handleInputFromServer(conn net.Conn) {
 			fmt.Println("\nTerputus dari server")
 			os.Exit(0)
 		}
-		fmt.Println(message)
+		fmt.Print("\r\033[K" + message)
+		fmt.Printf("[%s]: ", username)
 	}
 }
 
@@ -42,10 +43,9 @@ func main() {
 
 	fmt.Fprintf(conn, "%s\n", username)
 
-	go handleInputFromServer(conn)
+	go handleInputFromServer(conn, username)
 
 	for {
-		fmt.Printf("[%s]: ", username)
 		input, err := keyboardReader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Gagal menerima input dari keyboard")

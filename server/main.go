@@ -15,7 +15,11 @@ type Client struct {
 
 type Server struct {
 	clients   map[*Client]bool
-	broadcast chan string
+	broadcast chan Message
+}
+type Message struct {
+	sender  *Client
+	content string
 }
 
 func handleConnection(conn net.Conn, chatServer *Server) {
@@ -46,8 +50,13 @@ func handleConnection(conn net.Conn, chatServer *Server) {
 			delete(chatServer.clients, &newClient)
 			break
 		}
-		formattedMsg := fmt.Sprintf("[%s]: %s", newClient.name, message)
-		chatServer.broadcast <- formattedMsg
+		formattedMsg := fmt.Sprintf("\n[%s]: %s", newClient.name, message)
+		msgObj := Message{
+			sender:  &newClient,
+			content: formattedMsg,
+		}
+
+		chatServer.broadcast <- msgObj
 	}
 }
 
@@ -56,7 +65,10 @@ func handleMessage(chatServer *Server) {
 		msg := <-chatServer.broadcast
 
 		for client := range chatServer.clients {
-			_, err := fmt.Fprintf(client.conn, "%s", msg)
+			if client == msg.sender {
+				continue
+			}
+			_, err := fmt.Fprintf(client.conn, "%s\n", msg.content)
 			if err != nil {
 				client.conn.Close()
 				delete(chatServer.clients, client)
@@ -67,7 +79,7 @@ func handleMessage(chatServer *Server) {
 func main() {
 	chatServer := &Server{
 		clients:   make(map[*Client]bool),
-		broadcast: make(chan string),
+		broadcast: make(chan Message),
 	}
 	port := ":9090"
 	ln, err := net.Listen("tcp", port)
