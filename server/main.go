@@ -108,6 +108,12 @@ func handleConnection(conn net.Conn, chatServer *Server) {
 			continue
 		}
 
+		if newClient.room == "" {
+			fmt.Fprintf(conn,
+				"[SERVER] Anda harus masuk room terlebih dahulu. Gunakan /join <nama_room>\n")
+			continue
+		}
+
 		formattedMsg := fmt.Sprintf("[%s]: %s", newClient.name, message)
 		msgObj := Message{
 			sender:  &newClient,
@@ -234,7 +240,7 @@ func listRooms(client *Client, server *Server) {
 
 	if len(server.rooms) == 0 {
 		fmt.Fprintf(client.conn,
-			"Tidak ada room\n")
+			"Tidak ada room. Untuk membuat room, gunakan /create <nama_room>\n")
 		return
 	}
 
