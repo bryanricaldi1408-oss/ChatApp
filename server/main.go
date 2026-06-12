@@ -43,12 +43,27 @@ func handleConnection(conn net.Conn, chatServer *Server) {
 		message, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Printf("Kilen %s terputus\n", newClient.name)
+			delete(chatServer.clients, &newClient)
 			break
 		}
-		fmt.Printf("[%s]: %s", newClient.name, message)
+		formattedMsg := fmt.Sprintf("[%s]: %s", newClient.name, message)
+		chatServer.broadcast <- formattedMsg
 	}
 }
 
+func handleMessage(chatServer *Server) {
+	for {
+		msg := <-chatServer.broadcast
+
+		for client := range chatServer.clients {
+			_, err := fmt.Fprintf(client.conn, "%s", msg)
+			if err != nil {
+				client.conn.Close()
+				delete(chatServer.clients, client)
+			}
+		}
+	}
+}
 func main() {
 	chatServer := &Server{
 		clients:   make(map[*Client]bool),
@@ -62,6 +77,8 @@ func main() {
 	}
 	defer ln.Close()
 	fmt.Printf("Listening at %s\n", port)
+
+	go handleMessage(chatServer)
 
 	for {
 		conn, err := ln.Accept()

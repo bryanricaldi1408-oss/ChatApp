@@ -45,6 +45,7 @@ func main() {
 	go handleInputFromServer(conn)
 
 	for {
+		fmt.Printf("[%s]: ", username)
 		input, err := keyboardReader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Gagal menerima input dari keyboard")
