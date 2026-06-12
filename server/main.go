@@ -23,8 +23,6 @@ func handleConnection(conn net.Conn, chatServer *Server) {
 
 	reader := bufio.NewReader(conn)
 
-	fmt.Fprintf(conn, "Silahkan masukkan username Anda: ")
-
 	usernameInput, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("Gagal membaca username dari client")
@@ -39,6 +37,16 @@ func handleConnection(conn net.Conn, chatServer *Server) {
 	}
 
 	chatServer.clients[&newClient] = true
+	fmt.Printf("Klien %s telah terhubung\n", newClient.name)
+
+	for {
+		message, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Printf("Kilen %s terputus\n", newClient.name)
+			break
+		}
+		fmt.Printf("[%s]: %s", newClient.name, message)
+	}
 }
 
 func main() {
