@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"sync"
 )
 
 type Client struct {
@@ -16,6 +17,7 @@ type Client struct {
 type Server struct {
 	clients   map[*Client]bool
 	broadcast chan Message
+	mu        sync.Mutex
 }
 type Message struct {
 	sender  *Client
@@ -40,16 +42,22 @@ func handleConnection(conn net.Conn, chatServer *Server) {
 		name: username,
 	}
 
+	chatServer.mu.Lock()
 	chatServer.clients[&newClient] = true
-	fmt.Printf("Klien %s telah terhubung\n", newClient.name)
+	for client := range chatServer.clients {
+		fmt.Fprintf(client.conn, "Klien %s terhubung ke server\n", newClient.name)
+	}
+	chatServer.mu.Unlock()
 
 	for {
 		message, err := reader.ReadString('\n')
+		chatServer.mu.Lock()
 		if err != nil {
 			fmt.Printf("Kilen %s terputus\n", newClient.name)
 			delete(chatServer.clients, &newClient)
 			break
 		}
+		chatServer.mu.Unlock()
 		formattedMsg := fmt.Sprintf("\n[%s]: %s", newClient.name, message)
 		msgObj := Message{
 			sender:  &newClient,
@@ -63,7 +71,7 @@ func handleConnection(conn net.Conn, chatServer *Server) {
 func handleMessage(chatServer *Server) {
 	for {
 		msg := <-chatServer.broadcast
-
+		chatServer.mu.Lock()
 		for client := range chatServer.clients {
 			if client == msg.sender {
 				continue
@@ -74,6 +82,7 @@ func handleMessage(chatServer *Server) {
 				delete(chatServer.clients, client)
 			}
 		}
+		chatServer.mu.Unlock()
 	}
 }
 func main() {
