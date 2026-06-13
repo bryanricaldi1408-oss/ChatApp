@@ -40,6 +40,20 @@ func HandleConnection(conn net.Conn, server *Server) {
 		message = strings.TrimSpace(message)
 
 		switch {
+		case message == "/help":
+			helpMsg := `
+Daftar perintah yang tersedia:
+/create <nama_room>    - Membuat room baru
+/deleteroom <nama_room> - Menghapus room (hanya pemilik)
+/rooms                 - Menampilkan daftar semua room yang tersedia
+/join <nama_room>      - Bergabung ke dalam room
+/leave                 - Keluar dari room saat ini
+/who                   - Menampilkan daftar pengguna di room saat ini
+/help                  - Menampilkan daftar perintah ini
+`
+			fmt.Fprintf(conn, "%s\n", helpMsg)
+			continue
+
 		case strings.HasPrefix(message, "/create "):
 			roomName := strings.TrimSpace(strings.TrimPrefix(message, "/create "))
 			server.CreateRoom(client, roomName)
