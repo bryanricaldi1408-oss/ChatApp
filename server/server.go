@@ -136,6 +136,13 @@ func (s *Server) JoinRoom(client *Client, roomName string) {
 	client.room = roomName
 
 	fmt.Fprintf(client.conn, "Berhasil masuk room %s\n", roomName)
+
+	//Memberi notifikasi kepada client yang ada di room tersebut
+	for member := range room.Members {
+		if member != client {
+			fmt.Fprintf(member.conn, "%s telah bergabung ke room %s\n", client.name, roomName)
+		}
+	}
 }
 
 // LeaveRoom mengeluarkan client dari room saat ini.
@@ -183,13 +190,13 @@ func (s *Server) WhoInRoom(client *Client) {
 // AddClient menambahkan client baru ke daftar client server.
 func (s *Server) AddClient(client *Client) {
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	s.clients[client] = true
+	s.mutex.Unlock()
 }
 
 // RemoveClient menghapus client dari daftar client server.
 func (s *Server) RemoveClient(client *Client) {
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	delete(s.clients, client)
+	s.mutex.Unlock()
 }

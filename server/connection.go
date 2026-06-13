@@ -26,9 +26,6 @@ func HandleConnection(conn net.Conn, server *Server) {
 		name: username,
 	}
 
-	server.AddClient(client)
-	fmt.Printf("Klien %s telah terhubung\n", client.name)
-
 	for {
 		message, err := reader.ReadString('\n')
 		if err != nil {
