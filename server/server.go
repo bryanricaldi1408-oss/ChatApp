@@ -10,7 +10,7 @@ type Server struct {
 	clients   map[*Client]bool
 	rooms     map[string]*Room
 	broadcast chan Message
-	mutex     sync.RWMutex
+	mutex     sync.Mutex
 }
 
 // NewServer membuat instance Server baru dengan state kosong.
@@ -31,9 +31,9 @@ func (s *Server) HandleMessage() {
 			continue
 		}
 
-		s.mutex.RLock()
+		s.mutex.Lock()
 		room := s.rooms[msg.sender.room]
-		s.mutex.RUnlock()
+		s.mutex.Unlock()
 
 		for client := range room.Members {
 			if client == msg.sender {
@@ -96,8 +96,8 @@ func (s *Server) DeleteRoom(client *Client, roomName string) {
 
 // ListRooms menampilkan daftar room yang tersedia kepada client.
 func (s *Server) ListRooms(client *Client) {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
 	if len(s.rooms) == 0 {
 		fmt.Fprintf(client.conn,
@@ -159,8 +159,8 @@ func (s *Server) LeaveRoom(client *Client) {
 
 // WhoInRoom menampilkan daftar anggota di room client saat ini.
 func (s *Server) WhoInRoom(client *Client) {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
 	if client.room == "" {
 		fmt.Fprintf(client.conn, "Anda belum masuk room\n")
