@@ -200,3 +200,15 @@ func (s *Server) RemoveClient(client *Client) {
 	delete(s.clients, client)
 	s.mutex.Unlock()
 }
+
+func (s *Server) CheckUsername(username string) bool {
+	s.mutex.Lock()
+
+	for client := range s.clients {
+		if client.name ==username {
+			return false
+		}
+	}
+
+	return true
+}

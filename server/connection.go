@@ -13,13 +13,22 @@ func HandleConnection(conn net.Conn, server *Server) {
 
 	reader := bufio.NewReader(conn)
 
-	usernameInput, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println("Gagal membaca username dari client")
-		return
-	}
+	flag := false
+	for !flag {
+		usernameInput, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Gagal membaca username dari client")
+			return
+		}
 
-	username := strings.TrimSpace(usernameInput)
+		username := strings.TrimSpace(usernameInput)
+
+		flag = CheckUsername(username);
+
+		if !flag {
+			fmt.Fprintf();
+		}
+	}
 
 	client := &Client{
 		conn: conn,
