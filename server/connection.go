@@ -25,7 +25,17 @@ func HandleConnection(conn net.Conn, server *Server) {
 		conn: conn,
 		name: username,
 	}
+	server.mutex.Lock()
+	for existingClient := range server.clients {
+		if client.name == existingClient.name {
+			server.mutex.Unlock()
+			fmt.Fprintf(client.conn, "Username %s sudah dipakai\n", existingClient.name)
+			return
+		}
+	}
+	server.mutex.Unlock()
 
+	server.AddClient(client)
 	for {
 		message, err := reader.ReadString('\n')
 		if err != nil {
