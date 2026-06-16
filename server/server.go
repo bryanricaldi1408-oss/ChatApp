@@ -203,12 +203,19 @@ func (s *Server) RemoveClient(client *Client) {
 
 func (s *Server) CheckUsername(username string) bool {
 	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if username == "" {
+		return false
+	}
 
 	for client := range s.clients {
-		if client.name ==username {
+		if client.name == username {
+			fmt.Println("Username", username, "denied")
 			return false
 		}
 	}
 
+	fmt.Println("Username", username, "accepted")
 	return true
 }

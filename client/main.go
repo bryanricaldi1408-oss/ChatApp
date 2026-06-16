@@ -25,15 +25,6 @@ func handleInputFromServer(conn net.Conn, username string) {
 func main() {
 	keyboardReader := bufio.NewReader(os.Stdin)
 
-	fmt.Print("Silahkan masukan username anda: ")
-	username, err := keyboardReader.ReadString('\n')
-	if err != nil {
-		fmt.Println("Gagal membaca username")
-		os.Exit(1)
-	}
-
-	username = strings.TrimSpace(username)
-
 	conn, err := net.Dial("tcp", ":9090")
 	if err != nil {
 		fmt.Println("Gagal terhubung ke server:", err)
@@ -42,8 +33,34 @@ func main() {
 	defer conn.Close()
 	fmt.Println("berhasil terhubung ke server!")
 
-	fmt.Fprintf(conn, "%s\n", username)
+	flag := false
+	var username string
 
+	for !flag {
+		fmt.Print("Silahkan masukan username anda: ")
+		username, err = keyboardReader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Gagal membaca username")
+			os.Exit(1)
+		}
+
+		username = strings.TrimSpace(username)
+
+		//check username
+		var response string
+		fmt.Fprintf(conn, "%s\n", username)
+		fmt.Fscanln(conn, &response)
+		fmt.Println("username " + username + " sent")
+
+		if response == "USERNAME_ACCEPTED" {
+			flag = true
+		} else {
+			fmt.Print("Username sudah terpakai, silahkan masukkan username lain")
+			fmt.Scanln()
+		}
+	}
+
+	fmt.Fprintf(conn, "%s\n", username)
 	go handleInputFromServer(conn, username)
 
 	for {

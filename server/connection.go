@@ -12,6 +12,7 @@ func HandleConnection(conn net.Conn, server *Server) {
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
+	var username string
 
 	flag := false
 	for !flag {
@@ -21,12 +22,14 @@ func HandleConnection(conn net.Conn, server *Server) {
 			return
 		}
 
-		username := strings.TrimSpace(usernameInput)
+		username = strings.TrimSpace(usernameInput)
+		fmt.Println("Username " + username + " is being checked")
+		flag = server.CheckUsername(username)
 
-		flag = CheckUsername(username);
-
-		if !flag {
-			fmt.Fprintf();
+		if flag {
+			conn.Write([]byte("USERNAME_ACCEPTED\n"))
+		} else {
+			conn.Write([]byte("USERNAME_DENIED\n"))
 		}
 	}
 
@@ -34,6 +37,8 @@ func HandleConnection(conn net.Conn, server *Server) {
 		conn: conn,
 		name: username,
 	}
+
+	server.AddClient(client)
 
 	for {
 		message, err := reader.ReadString('\n')
