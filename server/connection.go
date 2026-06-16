@@ -35,6 +35,12 @@ func HandleConnection(conn net.Conn, server *Server) {
 	}
 	server.mutex.Unlock()
 
+	server.mutex.Lock()
+	for allClient := range server.clients {
+		fmt.Fprintf(allClient.conn, "[SERVER] %s berhasil bergabung ke server\n", client.name)
+	}
+	server.mutex.Unlock()
+
 	server.AddClient(client)
 	for {
 		message, err := reader.ReadString('\n')
@@ -91,7 +97,7 @@ Daftar perintah yang tersedia:
 
 		if client.room == "" {
 			fmt.Fprintf(conn,
-				"[SERVER] Anda harus masuk room terlebih dahulu. Gunakan /join <nama_room>\n")
+				"[SERVER] Anda harus masuk room terlebih dahulu. Gunakan /join <nama_room> atau gunakan perintah /help untuk melihat semua command\n")
 			continue
 		}
 

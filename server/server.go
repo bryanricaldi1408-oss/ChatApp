@@ -139,9 +139,7 @@ func (s *Server) JoinRoom(client *Client, roomName string) {
 
 	//Memberi notifikasi kepada client yang ada di room tersebut
 	for member := range room.Members {
-		if member != client {
-			fmt.Fprintf(member.conn, "%s telah bergabung ke room %s\n", client.name, roomName)
-		}
+		fmt.Fprintf(member.conn, "%s telah bergabung ke room %s\n", client.name, roomName)
 	}
 }
 
@@ -161,7 +159,9 @@ func (s *Server) LeaveRoom(client *Client) {
 	oldRoom := client.room
 	client.room = ""
 
-	fmt.Fprintf(client.conn, "Keluar dari room %s\n", oldRoom)
+	for c := range s.clients {
+		fmt.Fprintf(c.conn, "%s keluar dari room %s\n", client.name, oldRoom)
+	}
 }
 
 // WhoInRoom menampilkan daftar anggota di room client saat ini.

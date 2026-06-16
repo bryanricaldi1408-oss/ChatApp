@@ -8,6 +8,9 @@ import (
 	"strings"
 )
 
+// Menggunakan ANSI escape sequence
+// https://student.cs.uwaterloo.ca/~cs452/terminal.html
+// https://stackoverflow.com/questions/75300588/how-to-clear-last-line-in-terminal-with-golang
 func handleInputFromServer(conn net.Conn, username string) {
 	serverReader := bufio.NewReader(conn)
 	for {
@@ -40,7 +43,6 @@ func main() {
 		os.Exit(1)
 	}
 	defer conn.Close()
-	fmt.Println("berhasil terhubung ke server!")
 
 	fmt.Fprintf(conn, "%s\n", username)
 
