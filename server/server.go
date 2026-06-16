@@ -9,6 +9,8 @@ import (
 type Server struct {
 	clients   map[*Client]bool
 	rooms     map[string]*Room
+	// Channel broadcast digunakan untuk komunikasi pengiriman pesan antar goroutine secara aman.
+	// Referensi: https://go.dev/tour/concurrency/2
 	broadcast chan Message
 	mutex     sync.Mutex
 }
@@ -18,6 +20,8 @@ func NewServer() *Server {
 	return &Server{
 		clients:   make(map[*Client]bool),
 		rooms:     make(map[string]*Room),
+		// Inisialisasi unbuffered channel untuk transmisi struct Message.
+		// Referensi: https://go.dev/ref/spec#Making_slices_maps_and_channels
 		broadcast: make(chan Message),
 	}
 }
@@ -25,6 +29,9 @@ func NewServer() *Server {
 // HandleMessage memproses pesan dari broadcast channel dan mengirimkannya ke seluruh anggota room (kecuali pengirim).
 func (s *Server) HandleMessage() {
 	for {
+		// Menerima data dari channel broadcast. 
+		// Operasi <- akan memblokir goroutine ini hingga ada pesan yang masuk.
+		// Referensi: https://go.dev/tour/concurrency/2
 		msg := <-s.broadcast
 
 		if msg.sender.room == "" {

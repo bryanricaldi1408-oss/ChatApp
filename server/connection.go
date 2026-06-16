@@ -102,6 +102,10 @@ Daftar perintah yang tersedia:
 		}
 
 		formattedMsg := fmt.Sprintf("[%s]: %s", client.name, message)
+
+		// Mengirim pesan ke channel broadcast menggunakan operator <- .
+		// Pesan akan diproses lebih lanjut oleh goroutine server.HandleMessage().
+		// Referensi: https://go.dev/tour/concurrency/2
 		server.broadcast <- Message{
 			sender:  client,
 			content: formattedMsg,
