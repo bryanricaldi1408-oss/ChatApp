@@ -63,6 +63,7 @@ Daftar perintah yang tersedia:
 /leave                 - Keluar dari room saat ini
 /who                   - Menampilkan daftar pengguna di room saat ini
 /help                  - Menampilkan daftar perintah ini
+/quit				   - Keluar dari server
 `
 			fmt.Fprintf(conn, "%s\n", helpMsg)
 			continue
