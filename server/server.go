@@ -199,9 +199,14 @@ func (s *Server) AddClient(client *Client) {
 	s.mutex.Unlock()
 }
 
-// RemoveClient menghapus client dari daftar client server.
+// RemoveClient menghapus client dari daftar client server dan mengirim notifikasi ke semua client yang masih terhubung.
 func (s *Server) RemoveClient(client *Client) {
 	s.mutex.Lock()
 	delete(s.clients, client)
+
+	// Mengirim notifikasi ke semua client yang masih terhubung bahwa client telah meninggalkan server
+	for c := range s.clients {
+		fmt.Fprintf(c.conn, "[SERVER] %s telah meninggalkan server\n", client.name)
+	}
 	s.mutex.Unlock()
 }
