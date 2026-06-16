@@ -35,13 +35,13 @@ func HandleConnection(conn net.Conn, server *Server) {
 	}
 	server.mutex.Unlock()
 
+	server.AddClient(client)
+
 	server.mutex.Lock()
 	for allClient := range server.clients {
 		fmt.Fprintf(allClient.conn, "[SERVER] %s berhasil bergabung ke server\n", client.name)
 	}
 	server.mutex.Unlock()
-
-	server.AddClient(client)
 	for {
 		message, err := reader.ReadString('\n')
 		if err != nil {

@@ -135,8 +135,6 @@ func (s *Server) JoinRoom(client *Client, roomName string) {
 	room.Members[client] = true
 	client.room = roomName
 
-	fmt.Fprintf(client.conn, "Berhasil masuk room %s\n", roomName)
-
 	//Memberi notifikasi kepada client yang ada di room tersebut
 	for member := range room.Members {
 		fmt.Fprintf(member.conn, "%s telah bergabung ke room %s\n", client.name, roomName)
