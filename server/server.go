@@ -193,6 +193,27 @@ func (s *Server) WhoInRoom(client *Client) {
 	}
 }
 
+func (s *Server) DisconnectClient(client *Client) {
+	// Keluarkan client dari room (jika ada) sebelum di-remove,
+	// supaya tidak nyangkut di room.Members.
+	if client.room != "" {
+		s.mutex.Lock()
+		room := s.rooms[client.room]
+		if room != nil {
+			delete(room.Members, client)
+		}
+		s.mutex.Unlock()
+	}
+
+	s.RemoveClient(client)
+
+	s.mutex.Lock()
+	for c := range s.clients {
+		fmt.Fprintf(c.conn, "[SERVER] %s telah meninggalkan server\n", client.name)
+	}
+	s.mutex.Unlock()
+}
+
 // AddClient menambahkan client baru ke daftar client server.
 func (s *Server) AddClient(client *Client) {
 	s.mutex.Lock()
