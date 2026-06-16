@@ -94,6 +94,10 @@ Daftar perintah yang tersedia:
 		case message == "/who":
 			server.WhoInRoom(client)
 			continue
+
+		case message == "/quit":
+			server.DisconnectClient(client)
+			continue
 		}
 
 		if client.room == "" {
