@@ -58,6 +58,7 @@ func main() {
 		}
 
 		if strings.TrimSpace(input) == "/quit" {
+			fmt.Fprintf(conn, "/quit\n")
 			break
 		}
 		fmt.Fprintf(conn, "%s", input)
