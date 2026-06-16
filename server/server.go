@@ -164,8 +164,9 @@ func (s *Server) LeaveRoom(client *Client) {
 	oldRoom := client.room
 	client.room = ""
 
-	for c := range s.clients {
-		fmt.Fprintf(c.conn, "%s keluar dari room %s\n", client.name, oldRoom)
+	fmt.Fprintf(client.conn, "Anda keluar dari room %s\n", oldRoom)
+	for member := range room.Members {
+		fmt.Fprintf(member.conn, "%s telah keluar dari room %s\n", client.name, oldRoom)
 	}
 }
 
